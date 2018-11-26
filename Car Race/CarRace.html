@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Car Race Game</title>
+    <style type="text/css">
+
+      canvas{
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+      }
+
+    </style>
+    <script src="p5.js"></script>
+    <script src="p5.speech.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+
+      var speech = new p5.SpeechRec();
+
+      speech.continuous = true;
+
+      function Car(x,y){
+        this.x = x;
+        this.y = y;
+        this.w = 70;
+        this.h = 140;
+
+        this.show = function(){
+          rect(this.x,this.y,this.w,this.h);
+        }
+
+        this.dir = function(x,y){
+          this.x += x;
+          this.y += y;
+        }
+
+        this.edge = function(){
+          if(this.y > 900){
+            return true;
+          }else{
+            return false;
+          }
+        }
+
+        this.win = function(){
+          if(this.y > 800){
+            score++;
+          }
+        }
+
+        this.hit = function(other){
+          var d = dist(this.x,this.y,other.x,other.y);
+
+          if(d < 141){
+            textSize(50);
+            text("Game Over",150,400);
+            noloop();
+          }
+        }
+      }
+
+      var c;
+      var cars = [];
+      var score = 0;
+      var right,left;
+
+      function setup(){
+        createCanvas(550,750);
+
+        speech.onResult = showResult;
+
+        speech.start(true,true);
+
+        c = new Car(240,600);
+        cars.push(new Car(240,-150));
+      }
+
+      function showResult(){
+        if(speech.resultValue === true){
+          if(speech.resultString == "right" || speech.resultString == "light"){
+            right = true;
+          }
+          if(speech.resultString == "left" || speech.resultString == "lift"){
+            left = true;
+          }
+          console.log(speech.resultString);
+        }
+      }
+
+      function street_lines(){
+        fill(255);
+        stroke(255);
+        strokeWeight(5);
+
+        line(170,0,170,20);
+        for (var i = 40; i < 750; i += 40) {
+          line(170,i,170,i+20);
+        }
+        line(370,0,370,20);
+        for (var i = 40; i < 750; i += 40) {
+          line(370,i,370,i+20);
+        }
+      }
+
+      function draw(){
+        background(71);
+
+        street_lines();
+
+        fill(255,150,89);
+        noStroke();
+        if(frameCount % 300 == 0){
+           cars.push(new Car(420,-150));
+        }
+        if(frameCount % 500 == 0){
+           cars.push(new Car(50,-150));
+        }
+        if(frameCount % 400 == 0){
+           cars.push(new Car(240,-150));
+        }
+
+        fill(255);
+        noStroke();
+        c.show();
+        textSize(30);
+        strokeWeight(1);
+        fill(150,55,255);
+        text(score,c.x + 28,c.y + 80);
+
+        for (var i = 0; i < cars.length; i++) {
+          cars[i].show();
+          cars[i].dir(0,3);
+          if(cars[i].edge()){
+            cars[i].win();
+            cars.splice(i,1);
+          }
+          cars[i].hit(c);
+        }
+
+        if(left && c.x > 50){
+           c.dir(-190,0);
+           left = false;
+        }if(right && c.x < 250){
+           c.dir(190,0);
+            right = false;
+        }
+
+        //if(frameCount > 1000){
+          frameRate(15);
+        //}
+      }
+
+    </script>
+
+  </body>
+</html>
